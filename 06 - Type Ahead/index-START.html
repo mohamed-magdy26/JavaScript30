@@ -1,23 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Type Ahead 👀</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="https://fav.farm/🔥" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Type Ahead 👀</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="https://fav.farm/🔥" />
+  </head>
+  <body>
+    <form class="search-form">
+      <input type="text" class="search" placeholder="City or State" />
+      <ul class="suggestions">
+        <li>Filter for a city</li>
+        <li>or a state</li>
+      </ul>
+    </form>
+    <script>
+      const endpoint =
+        'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
 
-  <form class="search-form">
-    <input type="text" class="search" placeholder="City or State">
-    <ul class="suggestions">
-      <li>Filter for a city</li>
-      <li>or a state</li>
-    </ul>
-  </form>
-<script>
-const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+      const places = [];
+      fetch(endpoint)
+        .then((res) => res.json())
+        .then((data) => {
+          places.push(...data);
+        });
 
-</script>
-</body>
+      function matchedData(wordToMatch, places) {
+        // Further calls to `test(str)` will resume searching str ()
+        // starting from `lastIndex`.
+        // The `lastIndex` property will continue
+        // to increase each time `test()` returns `true`
+        // As long as test() returns true, lastIndex
+        // will not reset—even when testing a different string!
+
+        // as regex is created once the previous problem happens
+        // we can solve it by scoping inside the block of filter
+        // so it will be created every loop meaning always lastindex is 0
+        // const regex = new RegExp(wordToMatch, 'gi');
+
+        return places.filter((place) => {
+          const regex = new RegExp(wordToMatch, 'gi');
+          // return regex.test(place.city) || regex.test(place.state);
+          return place.city.match(regex) || place.state.match(regex);
+        });
+      }
+
+      function display() {
+        const matchedPlaces = matchedData(this.value, places);
+        const html = matchedPlaces
+          .map((place) => {
+            const regex = new RegExp(this.value, 'gi');
+            const cityName = place.city.replace(
+              regex,
+              `<span class="hl">${this.value}</span>`
+            );
+            const stateName = place.state.replace(
+              regex,
+              `<span class="hl">${this.value}</span>`
+            );
+
+            const populationFormated = new Intl.NumberFormat('ar-EG').format(
+              place.population
+            );
+
+            return `<li>
+            <span class='name'>${cityName}, ${stateName}</span>
+            <span class='population'>${populationFormated}</span>
+          </li>`;
+          })
+          .join('');
+
+        suggestions.innerHTML = html;
+      }
+
+      const suggestions = document.querySelector('.suggestions');
+      const input = document.querySelector('.search');
+      input.addEventListener('change', display);
+    </script>
+  </body>
 </html>
