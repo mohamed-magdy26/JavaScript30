@@ -1,20 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>HTML5 Canvas</title>
-  <link rel="icon" href="https://fav.farm/🔥" />
-</head>
-<body>
-<canvas id="draw" width="800" height="800"></canvas>
-<script>
-</script>
+  <head>
+    <meta charset="UTF-8" />
+    <title>HTML5 Canvas</title>
+    <link rel="icon" href="https://fav.farm/🔥" />
+  </head>
+  <body>
+    <canvas id="draw" width="800" height="800"></canvas>
+    <script>
+      const canvas = document.getElementById('draw');
+      canvas.width = window.innerWidth / 2;
+      canvas.height = window.innerHeight / 2;
+      const ctx = canvas.getContext('2d');
 
-<style>
-  html, body {
-    margin: 0;
-  }
-</style>
+      ctx.strokeStyle = '#BADA55';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 1;
 
-</body>
+      let lastX = 0; // to remmber the last reached X when stop drawing
+      let lastY = 0; // to remmber the last reached Y when stop drawing
+
+      let hue = 0; // just for manipulating color
+
+      let isDrawing = false; // to draw only when mouse is down
+
+      let isLineWidthIncreasing = true; // to mainpulate line width while drawing
+
+      function draw(e) {
+        // if `isDrawing` is false don't draw
+        if (!isDrawing) return;
+
+        ctx.beginPath(); // start a new path
+
+        // for every run we initializ `lastX` and `lastY` using `mousedown` event
+        // to be where the mouse is
+        ctx.moveTo(lastX, lastY); // move the pen to (lastX, lastY)
+
+        ctx.lineTo(e.offsetX, e.offsetY); // make a path to this point
+
+        ctx.stroke(); // render the path
+
+        //   just changing the color of stroke every time
+        ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+        hue++; // increaseing the hue every run
+        if (hue > 360) {
+          hue = 0; // this restart is not needed as hue more than 360 already map to the start again
+        }
+
+        if (ctx.lineWidth > 20 || ctx.lineWidth < 1) {
+          isLineWidthIncreasing = !isLineWidthIncreasing;
+        }
+
+        if (isLineWidthIncreasing) {
+          ctx.lineWidth += 0.1;
+        } else {
+          ctx.lineWidth -= 0.1;
+        }
+
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+      }
+
+      canvas.addEventListener('mousedown', (e) => {
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+
+        isDrawing = true; // used to draw only when mouse is down
+        // we assign it to false when mouse is up or our of the element
+      });
+
+      canvas.addEventListener('mouseup', () => (isDrawing = false));
+      canvas.addEventListener('mouseout', () => (isDrawing = false));
+      canvas.addEventListener('mousemove', draw);
+    </script>
+
+    <style>
+      html,
+      body {
+        margin: 0;
+      }
+
+      canvas {
+        border: 2px solid #000;
+      }
+    </style>
+  </body>
 </html>
